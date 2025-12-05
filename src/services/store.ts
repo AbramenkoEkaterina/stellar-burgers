@@ -1,4 +1,7 @@
+/*настраиваем хранилище*/
+
 import { configureStore } from '@reduxjs/toolkit';
+import { rootReducer } from './root-reducer';
 
 import {
   TypedUseSelectorHook,
@@ -6,10 +9,8 @@ import {
   useSelector as selectorHook
 } from 'react-redux';
 
-const rootReducer = () => {}; // Заменить на импорт настоящего редьюсера
-
-const store = configureStore({
-  reducer: rootReducer,
+export const store = configureStore({
+  reducer: rootReducer, //передали гнастоящий редюсер
   devTools: process.env.NODE_ENV !== 'production'
 });
 
