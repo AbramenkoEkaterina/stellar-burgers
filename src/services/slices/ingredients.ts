@@ -1,8 +1,4 @@
-import {
-  createAsyncThunk,
-  createSlice,
-  isRejectedWithValue
-} from '@reduxjs/toolkit'; //создает редюсер и экшены и вторая асинхронный экшен
+import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'; //создает редюсер и экшены и вторая асинхронный экшен
 import { getIngredientsApi } from '@api'; //получаем ток массив ингридиентов
 import { TIngredient } from '@utils-types';
 
