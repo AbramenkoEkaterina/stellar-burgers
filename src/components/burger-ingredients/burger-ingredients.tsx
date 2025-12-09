@@ -5,7 +5,7 @@ import {
   selectIngredients,
   selectIngredientsLoading,
   selectIngredientsError
-} from '../../services/selector/ingredients-selectors';
+} from '../../services/selectors/ingredients-selectors';
 import { useInView } from 'react-intersection-observer';
 
 import { TTabMode } from '@utils-types';

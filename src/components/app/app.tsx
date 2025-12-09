@@ -1,118 +1,139 @@
-import {
-  ConstructorPage,
-  Feed,
-  ForgotPassword,
-  Login,
-  NotFound404,
-  Profile,
-  ProfileOrders,
-  Register,
-  ResetPassword
-} from '@pages';
+import { FC } from 'react';
+import { Routes, Route, useLocation } from 'react-router-dom';
 
-import '../../index.css';
-import styles from './app.module.css';
+import { ConstructorPage } from '../../pages/constructor-page';
+import { Feed } from '../../pages/feed';
+import { Login } from '../../pages/login';
+import { Register } from '../../pages/register';
+import { ForgotPassword } from '../../pages/forgot-password';
+import { ResetPassword } from '../../pages/reset-password';
+import { Profile } from '../../pages/profile';
+import { ProfileOrders } from '../../pages/profile-orders';
+import { NotFound404 } from '../../pages/not-fount-404';
 
-import { AppHeader } from '@components';
-import { Modal, OrderInfo, IngredientDetails } from '@components';
+import { IngredientDetails } from '../ingredient-details/ingredient-details';
+import { OrderInfo } from '../order-info/order-info';
+import { Modal } from '../modal/modal';
+import { ProtectedRoute } from '../protected-route/protected-route';
+import { AppHeader } from '../app-header';
 
-import {
-  Routes,
-  Route,
-  BrowserRouter as Router,
-  useNavigate
-} from 'react-router-dom';
+export const App: FC = () => {
+  const location = useLocation();
 
-import ProtectedRoute from '../protected-route/protected-route';
+  // background — откуда открыли модалку
+  const state = location.state as { background?: Location };
 
-const App = () => (
-  <Router>
-    <div className={styles.app}>
-      <AppHeader />
-      <AppRoutes />
-    </div>
-  </Router>
-);
-
-const AppRoutes = () => {
-  const navigate = useNavigate();
-  const closeModal = () => navigate(-1);
-
+  // теперь Routes первичные используют background ?? location
   return (
-    <Routes>
-      {/*Главная */}
-      <Route path='/' element={<ConstructorPage />} />
+    <>
+      <AppHeader />
+      <Routes location={state?.background || location}>
+        <Route path='/' element={<ConstructorPage />} />
+        <Route path='/feed' element={<Feed />} />
 
-      {/*лента заказов */}
-      <Route path='/feed' element={<Feed />} />
+        <Route
+          path='/login'
+          element={
+            <ProtectedRoute isAuth={false}>
+              <Login />
+            </ProtectedRoute>
+          }
+        />
 
-      {/*авторизация */}
-      <Route
-        path='/login'
-        element={<ProtectedRoute onlyUnAuth element={<Login />} />}
-      />
+        <Route
+          path='/register'
+          element={
+            <ProtectedRoute isAuth={false}>
+              <Register />
+            </ProtectedRoute>
+          }
+        />
 
-      <Route
-        path='/register'
-        element={<ProtectedRoute onlyUnAuth element={<Register />} />}
-      />
+        <Route
+          path='/forgot-password'
+          element={
+            <ProtectedRoute isAuth={false}>
+              <ForgotPassword />
+            </ProtectedRoute>
+          }
+        />
 
-      <Route
-        path='/forgot-password'
-        element={<ProtectedRoute onlyUnAuth element={<ForgotPassword />} />}
-      />
+        <Route
+          path='/reset-password'
+          element={
+            <ProtectedRoute isAuth={false}>
+              <ResetPassword />
+            </ProtectedRoute>
+          }
+        />
 
-      <Route
-        path='/reset-password'
-        element={<ProtectedRoute onlyUnAuth element={<ResetPassword />} />}
-      />
+        <Route
+          path='/profile'
+          element={
+            <ProtectedRoute isAuth>
+              <Profile />
+            </ProtectedRoute>
+          }
+        />
 
-      {/*Профиль */}
-      <Route
-        path='/profile'
-        element={<ProtectedRoute element={<Profile />} />}
-      />
+        <Route
+          path='/profile/orders'
+          element={
+            <ProtectedRoute isAuth>
+              <ProfileOrders />
+            </ProtectedRoute>
+          }
+        />
 
-      <Route
-        path='/profile/orders'
-        element={<ProtectedRoute element={<ProfileOrders />} />}
-      />
+        <Route path='*' element={<NotFound404 />} />
 
-      {/*модалки */}
-      <Route
-        path='/feed/:number'
-        element={
-          <Modal title='Информация о заказе' onClose={closeModal}>
-            <OrderInfo />
-          </Modal>
-        }
-      />
+        {/* Страницы с полноформатным отображением деталей */}
+        <Route path='/feed/:number' element={<OrderInfo />} />
+        <Route path='/ingredients/:id' element={<IngredientDetails />} />
+        <Route
+          path='/profile/orders/:number'
+          element={
+            <ProtectedRoute isAuth>
+              <OrderInfo />
+            </ProtectedRoute>
+          }
+        />
+      </Routes>
 
-      <Route
-        path='/ingredients/:id'
-        element={
-          <Modal title='Ингредиент' onClose={closeModal}>
-            <IngredientDetails />
-          </Modal>
-        }
-      />
-
-      <Route
-        path='/profile/orders/:number'
-        element={
-          <ProtectedRoute
+      {/* =============== МОДАЛКИ поверх =============== */}
+      {state?.background && (
+        <Routes>
+          <Route
+            path='/feed/:number'
             element={
-              <Modal title='Информация о заказе' onClose={closeModal}>
+              <Modal
+                title='Детали заказа'
+                onClose={() => window.history.back()}
+              >
                 <OrderInfo />
               </Modal>
             }
           />
-        }
-      />
-
-      <Route path='*' element={<NotFound404 />} />
-    </Routes>
+          <Route
+            path='/ingredients/:id'
+            element={
+              <Modal title='Ингредиент' onClose={() => window.history.back()}>
+                <IngredientDetails />
+              </Modal>
+            }
+          />
+          <Route
+            path='/profile/orders/:number'
+            element={
+              <ProtectedRoute isAuth>
+                <Modal title='Мой заказ' onClose={() => window.history.back()}>
+                  <OrderInfo />
+                </Modal>
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      )}
+    </>
   );
 };
-
-export default App;
