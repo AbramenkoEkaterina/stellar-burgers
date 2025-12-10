@@ -1,12 +1,8 @@
-// import { RootState } from '../store';
+import { RootState } from '../store';
 
-// export const selectConstructorBun = (state: RootState) => state.constructor.bun;
+export const selectConstructorItems = (state: RootState) => state.burgerconstructor;
 
-// export const selectConstructorIngredients = (state: RootState) =>
-//   state.constructor.ingredients;
+export const selectConstructorBun = (state: RootState) => state.burgerconstructor.bun;
 
-// export const selectOrderRequest = (state: RootState) =>
-//   state.constructor.orderRequest;
-
-// export const selectOrderModalData = (state: RootState) =>
-//   state.constructor.orderModalData;
+export const selectConstructorIngredients = (state: RootState) =>
+  state.burgerconstructor.ingredients;

@@ -4,7 +4,7 @@ import { fetchIngredients } from '../../services/slices/ingredients';
 import {
   selectIngredients,
   selectIngredientsLoading,
-  selectIngredientsError
+  selectIngredientsError,
 } from '../../services/selectors/ingredients-selectors';
 import { useInView } from 'react-intersection-observer';
 
@@ -17,6 +17,7 @@ export const BurgerIngredients: FC = () => {
   const ingredients = useSelector(selectIngredients);
   const loading = useSelector(selectIngredientsLoading);
   const error = useSelector(selectIngredientsError);
+
   /** TODO: взять переменные из стора группирую по типу */
   const buns = ingredients.filter((item) => item.type === 'bun');
   const mains = ingredients.filter((item) => item.type === 'main');
