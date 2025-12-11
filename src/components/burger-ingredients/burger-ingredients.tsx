@@ -4,12 +4,13 @@ import { fetchIngredients } from '../../services/slices/ingredients';
 import {
   selectIngredients,
   selectIngredientsLoading,
-  selectIngredientsError,
+  selectIngredientsError
 } from '../../services/selectors/ingredients-selectors';
 import { useInView } from 'react-intersection-observer';
 
 import { TTabMode } from '@utils-types';
 import { BurgerIngredientsUI } from '../ui/burger-ingredients';
+import { selectIngredientCount } from '../../services/selectors/constructor-selectors';
 
 export const BurgerIngredients: FC = () => {
   //получаю данные из REDUX
@@ -17,6 +18,7 @@ export const BurgerIngredients: FC = () => {
   const ingredients = useSelector(selectIngredients);
   const loading = useSelector(selectIngredientsLoading);
   const error = useSelector(selectIngredientsError);
+  const ingredientCounts = useSelector(selectIngredientCount);
 
   /** TODO: взять переменные из стора группирую по типу */
   const buns = ingredients.filter((item) => item.type === 'bun');
@@ -95,6 +97,7 @@ export const BurgerIngredients: FC = () => {
       buns={buns}
       mains={mains}
       sauces={sauces}
+      ingredientCounts={ingredientCounts}
       titleBunRef={titleBunRef}
       titleMainRef={titleMainRef}
       titleSaucesRef={titleSaucesRef}

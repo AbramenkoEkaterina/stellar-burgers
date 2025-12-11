@@ -4,4 +4,5 @@ export type TIngredientsCategoryProps = {
   title: string;
   titleRef: React.RefObject<HTMLHeadingElement>;
   ingredients: TIngredient[];
+  counts: Record<string, number>;
 };
