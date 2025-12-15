@@ -1,12 +1,8 @@
 import { FC } from 'react';
 import { TOrder } from '@utils-types';
 import { FeedInfoUI } from '../ui/feed-info';
-import { useDispatch, useSelector } from '../../services/store';
-import {
-  selectFeed,
-  selectFeedError,
-  selectFeedLoadding
-} from '../../services/selectors/feed-selectors';
+import { useSelector } from '../../services/store';
+import { selectFeed } from '../../services/selectors/feed-selectors';
 
 const getOrders = (orders: TOrder[], status: string): number[] =>
   orders
@@ -15,35 +11,13 @@ const getOrders = (orders: TOrder[], status: string): number[] =>
     .slice(0, 20);
 
 export const FeedInfo: FC = () => {
-  const feed = useSelector(selectFeed);
-  const loading = useSelector(selectFeedLoadding);
-  const error = useSelector(selectFeedError);
+  const feedData = useSelector(selectFeed); // { orders, total, totalToday } | null
+  const orders = feedData?.orders || [];
+  const feed = {
+    total: feedData?.total || 0,
+    totalToday: feedData?.totalToday || 0
+  };
 
-  if (loading) {
-    return (
-      <div className='text text_type_main-medium text_color_inactive mt-20'>
-        Загрузка...
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className='text text_type_main-medium text_color_inactive mt-20'>
-        Ошибка: {error}
-      </div>
-    );
-  }
-
-  if (!feed) {
-    return (
-      <div className='text text_type_main-medium text_color_inactive mt-20'>
-        Лента пуста
-      </div>
-    );
-  }
-
-  const orders = feed.orders;
   const readyOrders = getOrders(orders, 'done');
   const pendingOrders = getOrders(orders, 'pending');
 

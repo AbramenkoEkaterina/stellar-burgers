@@ -1,115 +1,117 @@
-import { FC } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
-
-import { ConstructorPage } from '../../pages/constructor-page';
-import { Feed } from '../../pages/feed';
-import { Login } from '../../pages/login';
-import { Register } from '../../pages/register';
-import { ForgotPassword } from '../../pages/forgot-password';
-import { ResetPassword } from '../../pages/reset-password';
-import { Profile } from '../../pages/profile';
-import { ProfileOrders } from '../../pages/profile-orders';
-import { NotFound404 } from '../../pages/not-fount-404';
-
-import { IngredientDetails } from '../ingredient-details/ingredient-details';
-import { OrderInfo } from '../order-info/order-info';
-import { Modal } from '../modal/modal';
+import { Route, Routes, useNavigate, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
+import {
+  ConstructorPage,
+  Feed,
+  NotFound404,
+  Login,
+  Register,
+  ForgotPassword,
+  ResetPassword,
+  Profile,
+  ProfileOrders
+} from '@pages';
+import { AppHeader, IngredientDetails, Modal, OrderInfo } from '@components';
 import { ProtectedRoute } from '../protected-route/protected-route';
-import { AppHeader } from '../app-header';
+import { useDispatch } from '../../services/store';
+import { fetchIngredients } from '../../services/slices/ingredients';
+import { checkUserAuth } from '../../services/slices/userSlice';
+import '../../index.css';
+import styles from './app.module.css';
 
-export const App: FC = () => {
+const App = () => {
+  const navigate = useNavigate();
+  const handleGoBack = () => {
+    navigate(-1);
+  };
+
   const location = useLocation();
+  const background = location.state?.background;
 
-  // background — откуда открыли модалку
-  const state = location.state as { background?: Location };
+  const dispatch = useDispatch();
 
-  // теперь Routes первичные используют background ?? location
+  useEffect(() => {
+    dispatch(fetchIngredients());
+    dispatch(checkUserAuth());
+  }, []);
+
   return (
-    <>
+    <div className={styles.app}>
       <AppHeader />
-      <Routes location={state?.background || location}>
+      <Routes location={background || location}>
         <Route path='/' element={<ConstructorPage />} />
-        <Route path='/feed' element={<Feed />} />
-
+        <Route path='/feed'>
+          <Route index element={<Feed />} />
+          <Route path=':number' element={<OrderInfo />} />
+        </Route>
         <Route
           path='/login'
           element={
-            <ProtectedRoute isAuth={false}>
+            <ProtectedRoute onlyUnAuth>
               <Login />
             </ProtectedRoute>
           }
         />
-
         <Route
           path='/register'
           element={
-            <ProtectedRoute isAuth={false}>
+            <ProtectedRoute onlyUnAuth>
               <Register />
             </ProtectedRoute>
           }
         />
-
         <Route
           path='/forgot-password'
           element={
-            <ProtectedRoute isAuth={false}>
+            <ProtectedRoute onlyUnAuth>
               <ForgotPassword />
             </ProtectedRoute>
           }
         />
-
         <Route
           path='/reset-password'
           element={
-            <ProtectedRoute isAuth={false}>
+            <ProtectedRoute onlyUnAuth>
               <ResetPassword />
             </ProtectedRoute>
           }
         />
-
-        <Route
-          path='/profile'
-          element={
-            <ProtectedRoute isAuth>
-              <Profile />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route
-          path='/profile/orders'
-          element={
-            <ProtectedRoute isAuth>
-              <ProfileOrders />
-            </ProtectedRoute>
-          }
-        />
-
-        <Route path='*' element={<NotFound404 />} />
-
-        {/* Страницы с полноформатным отображением деталей */}
-        <Route path='/feed/:number' element={<OrderInfo />} />
+        <Route path='/profile'>
+          <Route
+            index
+            element={
+              <ProtectedRoute>
+                <Profile />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='orders'
+            element={
+              <ProtectedRoute>
+                <ProfileOrders />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path='orders/:number'
+            element={
+              <ProtectedRoute>
+                <OrderInfo />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
         <Route path='/ingredients/:id' element={<IngredientDetails />} />
-        <Route
-          path='/profile/orders/:number'
-          element={
-            <ProtectedRoute isAuth>
-              <OrderInfo />
-            </ProtectedRoute>
-          }
-        />
+        <Route path='*' element={<NotFound404 />} />
       </Routes>
 
-      {/* =============== МОДАЛКИ поверх =============== */}
-      {state?.background && (
+      {background && (
         <Routes>
           <Route
             path='/feed/:number'
             element={
-              <Modal
-                title='Детали заказа'
-                onClose={() => window.history.back()}
-              >
+              <Modal title='' onClose={handleGoBack}>
                 <OrderInfo />
               </Modal>
             }
@@ -117,7 +119,7 @@ export const App: FC = () => {
           <Route
             path='/ingredients/:id'
             element={
-              <Modal title='Ингредиент' onClose={() => window.history.back()}>
+              <Modal title='Детали ингредиента' onClose={handleGoBack}>
                 <IngredientDetails />
               </Modal>
             }
@@ -125,8 +127,8 @@ export const App: FC = () => {
           <Route
             path='/profile/orders/:number'
             element={
-              <ProtectedRoute isAuth>
-                <Modal title='Мой заказ' onClose={() => window.history.back()}>
+              <ProtectedRoute>
+                <Modal title='' onClose={handleGoBack}>
                   <OrderInfo />
                 </Modal>
               </ProtectedRoute>
@@ -134,6 +136,8 @@ export const App: FC = () => {
           />
         </Routes>
       )}
-    </>
+    </div>
   );
 };
+
+export default App;

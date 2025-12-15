@@ -1,4 +1,4 @@
-import { getFeedsApi } from '@api';
+import { getFeedsApi, getOrderByNumberApi } from '@api';
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import { TOrder } from '@utils-types';
 
@@ -14,11 +14,13 @@ interface IFeedState {
   feed: TFeed | null;
   loading: boolean;
   error: string | null;
+  selectedOrder: TOrder | null;
 }
 
 const initialState: IFeedState = {
   feed: null,
   loading: false,
+  selectedOrder: null,
   error: null
 };
 
@@ -36,26 +38,48 @@ export const fetchFeed = createAsyncThunk<TFeed, void, { rejectValue: string }>(
   }
 );
 
-//слайс лента
+export const getOrderById = createAsyncThunk<
+  TOrder,
+  number,
+  { rejectValue: string }
+>('feed/getOrderById', async (number, { rejectWithValue }) => {
+  try {
+    const response = await getOrderByNumberApi(number);
+    return response.orders[0];
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Неизвестная ошибка';
+    return rejectWithValue(message);
+  }
+});
+
 const feedsSlice = createSlice({
   name: 'feed',
   initialState,
-  reducers: {},
+  reducers: {
+    // ✅ ДОБАВЬТЕ action для сброса
+    clearSelectedOrder: (state) => {
+      state.selectedOrder = null;
+    }
+  },
   extraReducers: (builder) => {
+    // ... fetchFeed cases
+
+    // ✅ ДОБАВЬТЕ cases для getOrderById
     builder
-      .addCase(fetchFeed.pending, (state) => {
+      .addCase(getOrderById.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchFeed.fulfilled, (state, action) => {
+      .addCase(getOrderById.fulfilled, (state, action) => {
         state.loading = false;
-        state.feed = action.payload;
+        state.selectedOrder = action.payload;
       })
-      .addCase(fetchFeed.rejected, (state, action) => {
+      .addCase(getOrderById.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || 'Ошибка загрузки ленты';
+        state.error = action.payload || 'Ошибка загрузки заказа';
       });
   }
 });
 
+export const { clearSelectedOrder } = feedsSlice.actions;
 export const feedReducer = feedsSlice.reducer;
