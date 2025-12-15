@@ -1,27 +1,28 @@
+import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../store';
 
+// базовые селекторы
 export const selectConstructorItems = (state: RootState) =>
   state.burgerconstructor;
-
 export const selectConstructorBun = (state: RootState) =>
   state.burgerconstructor.bun;
-
 export const selectConstructorIngredients = (state: RootState) =>
   state.burgerconstructor.ingredients;
 
-// ✔️ Селектор для количества ингредиентов по _id
-export const selectIngredientCount = (state: RootState) => {
-  const counts: Record<string, number> = {};
+// мемоизированный селектор для подсчёта ингредиентов
+export const selectIngredientCount = createSelector(
+  [selectConstructorBun, selectConstructorIngredients],
+  (bun, ingredients) => {
+    const counts: Record<string, number> = {};
 
-  // начинки
-  state.burgerconstructor.ingredients.forEach((item) => {
-    counts[item._id] = (counts[item._id] || 0) + 1;
-  });
+    ingredients.forEach((item) => {
+      counts[item._id] = (counts[item._id] || 0) + 1;
+    });
 
-  // булка всегда удваивается
-  if (state.burgerconstructor.bun) {
-    counts[state.burgerconstructor.bun._id] = 2;
+    if (bun) {
+      counts[bun._id] = 2; // булка всегда удваивается
+    }
+
+    return counts;
   }
-
-  return counts;
-};
+);
