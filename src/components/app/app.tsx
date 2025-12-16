@@ -33,7 +33,7 @@ const App = () => {
   useEffect(() => {
     dispatch(fetchIngredients());
     dispatch(checkUserAuth());
-  }, []);
+  }, [dispatch]);
 
   return (
     <div className={styles.app}>

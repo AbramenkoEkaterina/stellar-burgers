@@ -122,10 +122,11 @@ export const orderSlice = createSlice({
 });
 
 export const getOrders = (state: RootState) => state.orders.orders;
+export const getOrderLoading = (state: RootState) => state.orders.loading;
 export const getOrderModalData = (state: RootState) =>
   state.orders.orderModalData;
-export const getOrderRequest = (state: RootState) => state.orders.orderRequest;
-export const getOrderLoading = (state: RootState) => state.orders.loading;
 
+export const getOrderRequest = (state: RootState) => state.orders.orderRequest;
 export const { clearOrderModal } = orderSlice.actions;
+
 export default orderSlice.reducer;

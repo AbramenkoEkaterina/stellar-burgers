@@ -1,17 +1,15 @@
-import { getFeedsApi, getOrderByNumberApi } from '@api';
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { getFeedsApi, getOrderByNumberApi } from '@api';
 import { TOrder } from '@utils-types';
+import { RootState } from '../store';
 
-//то что возвращает getFeedsApi
-export type TFeed = {
-  orders: TOrder[];
-  total: number;
-  totalToday: number;
-};
-
-//тип ссстояния слайса
+// тип состояния ленты
 interface IFeedState {
-  feed: TFeed | null;
+  feed: {
+    orders: TOrder[];
+    total: number;
+    totalToday: number;
+  } | null;
   loading: boolean;
   error: string | null;
   selectedOrder: TOrder | null;
@@ -20,35 +18,39 @@ interface IFeedState {
 const initialState: IFeedState = {
   feed: null,
   loading: false,
-  selectedOrder: null,
-  error: null
+  error: null,
+  selectedOrder: null
 };
 
-//загрузка ленты
-export const fetchFeed = createAsyncThunk<TFeed, void, { rejectValue: string }>(
-  'feed/fetchFeed',
-  async (_, { rejectWithValue }) => {
-    try {
-      const data = await getFeedsApi();
-      return data;
-    } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : 'Неизвестная ошибка';
-      return rejectWithValue(message);
-    }
+// загрузка всей ленты
+export const fetchFeed = createAsyncThunk<
+  { orders: TOrder[]; total: number; totalToday: number },
+  void,
+  { rejectValue: string }
+>('feed/fetchFeed', async (_, { rejectWithValue }) => {
+  try {
+    const data = await getFeedsApi();
+    return data;
+  } catch (err: unknown) {
+    return rejectWithValue(
+      err instanceof Error ? err.message : 'Неизвестная ошибка'
+    );
   }
-);
+});
 
+// загрузка конкретного заказа
 export const getOrderById = createAsyncThunk<
   TOrder,
   number,
   { rejectValue: string }
 >('feed/getOrderById', async (number, { rejectWithValue }) => {
   try {
-    const response = await getOrderByNumberApi(number);
-    return response.orders[0];
+    const data = await getOrderByNumberApi(number);
+    return data.orders[0];
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : 'Неизвестная ошибка';
-    return rejectWithValue(message);
+    return rejectWithValue(
+      err instanceof Error ? err.message : 'Неизвестная ошибка'
+    );
   }
 });
 
@@ -56,16 +58,26 @@ const feedsSlice = createSlice({
   name: 'feed',
   initialState,
   reducers: {
-    // ✅ ДОБАВЬТЕ action для сброса
     clearSelectedOrder: (state) => {
       state.selectedOrder = null;
     }
   },
   extraReducers: (builder) => {
-    // ... fetchFeed cases
-
-    // ✅ ДОБАВЬТЕ cases для getOrderById
     builder
+      // загрузка ленты
+      .addCase(fetchFeed.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchFeed.fulfilled, (state, action) => {
+        state.loading = false;
+        state.feed = action.payload;
+      })
+      .addCase(fetchFeed.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload ?? null;
+      })
+      // загрузка отдельного заказа
       .addCase(getOrderById.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -76,7 +88,7 @@ const feedsSlice = createSlice({
       })
       .addCase(getOrderById.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload || 'Ошибка загрузки заказа';
+        state.error = action.payload ?? null;
       });
   }
 });

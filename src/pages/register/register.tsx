@@ -11,10 +11,16 @@ export const Register: FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: SyntheticEvent) => {
+  const handleSubmit = async (e: SyntheticEvent) => {
     e.preventDefault();
-    dispatch(registerUser({ name: userName, email, password }));
-    navigate('/login');
+    try {
+      await dispatch(
+        registerUser({ name: userName, email, password })
+      ).unwrap();
+      navigate('/login');
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
