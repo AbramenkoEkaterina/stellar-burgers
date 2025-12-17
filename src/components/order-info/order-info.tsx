@@ -9,7 +9,6 @@ import { getSelectedOrder } from '../../services/selectors/feed-selectors';
 import { clearSelectedOrder, getOrderById } from '../../services/slices/feed';
 
 export const OrderInfo: FC = () => {
-  /** DONE: взять переменные orderData и ingredients из стора */
   const orderData = useSelector(getSelectedOrder);
   const ingredients: TIngredient[] = useSelector(selectIngredients);
 
@@ -20,15 +19,12 @@ export const OrderInfo: FC = () => {
     if (number) {
       dispatch(getOrderById(Number(number)));
     }
+
     return () => {
       dispatch(clearSelectedOrder());
     };
-  }, [number]);
+  }, [number, dispatch]);
 
-  if (!orderData || !ingredients.length) {
-    return <Preloader />;
-  }
-  /* Готовим данные для отображения */
   const orderInfo = useMemo(() => {
     if (!orderData || !ingredients.length) return null;
 
@@ -40,14 +36,15 @@ export const OrderInfo: FC = () => {
 
     const ingredientsInfo = orderData.ingredients.reduce(
       (acc: TIngredientsWithCount, item) => {
+        const ingredient = ingredients.find((ing) => ing._id === item);
+
+        if (!ingredient) return acc;
+
         if (!acc[item]) {
-          const ingredient = ingredients.find((ing) => ing._id === item);
-          if (ingredient) {
-            acc[item] = {
-              ...ingredient,
-              count: 1
-            };
-          }
+          acc[item] = {
+            ...ingredient,
+            count: 1
+          };
         } else {
           acc[item].count++;
         }
