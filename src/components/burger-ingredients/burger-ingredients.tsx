@@ -1,14 +1,29 @@
 import { useState, useRef, useEffect, FC } from 'react';
+import { useDispatch, useSelector } from '../../services/store';
+import { fetchIngredients } from '../../services/slices/ingredients';
+import {
+  selectIngredients,
+  selectIngredientsLoading,
+  selectIngredientsError
+} from '../../services/selectors/ingredients-selectors';
 import { useInView } from 'react-intersection-observer';
 
 import { TTabMode } from '@utils-types';
 import { BurgerIngredientsUI } from '../ui/burger-ingredients';
+import { selectIngredientCount } from '../../services/selectors/constructor-selectors';
 
 export const BurgerIngredients: FC = () => {
-  /** TODO: взять переменные из стора */
-  const buns = [];
-  const mains = [];
-  const sauces = [];
+  //получаю данные из REDUX
+  const dispatch = useDispatch();
+  const ingredients = useSelector(selectIngredients);
+  const loading = useSelector(selectIngredientsLoading);
+  const error = useSelector(selectIngredientsError);
+  const ingredientCounts = useSelector(selectIngredientCount);
+
+  /** TODO: взять переменные из стора группирую по типу */
+  const buns = ingredients.filter((item) => item.type === 'bun');
+  const mains = ingredients.filter((item) => item.type === 'main');
+  const sauces = ingredients.filter((item) => item.type === 'sauce');
 
   const [currentTab, setCurrentTab] = useState<TTabMode>('bun');
   const titleBunRef = useRef<HTMLHeadingElement>(null);
@@ -37,6 +52,35 @@ export const BurgerIngredients: FC = () => {
     }
   }, [inViewBuns, inViewFilling, inViewSauces]);
 
+  /*загрузка ингридиентов при монтировании*/
+  useEffect(() => {
+    dispatch(fetchIngredients());
+  }, [dispatch]);
+
+  if (loading) {
+    return (
+      <div className='tex text_type_main-large mt-20'>
+        Загрузка ингридиентов...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className='text text_type_main-medium text_color_inactive mt-20'>
+        Ошибка загрузки: {error}
+      </div>
+    );
+  }
+
+  if (ingredients.length === 0) {
+    return (
+      <div className='text text_type_main-medium text_color_inactive mt-20'>
+        Ингредиенты не найдены
+      </div>
+    );
+  }
+
   const onTabClick = (tab: string) => {
     setCurrentTab(tab as TTabMode);
     if (tab === 'bun')
@@ -47,14 +91,13 @@ export const BurgerIngredients: FC = () => {
       titleSaucesRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  return null;
-
   return (
     <BurgerIngredientsUI
       currentTab={currentTab}
       buns={buns}
       mains={mains}
       sauces={sauces}
+      ingredientCounts={ingredientCounts}
       titleBunRef={titleBunRef}
       titleMainRef={titleMainRef}
       titleSaucesRef={titleSaucesRef}
