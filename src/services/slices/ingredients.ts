@@ -36,7 +36,7 @@ export const fetchIngredients = createAsyncThunk<
     fulfilled → успех: сохраняем данные, выключаем лоадер.
     rejected → ошибка: сохраняем текст, выключаем лоадер.
 */
-const ingredientsSlice = createSlice({
+export const ingredientsSlice = createSlice({
   name: 'ingredients',
   initialState,
   reducers: {}, // ← синхронных экшенов пока нет
