@@ -60,6 +60,15 @@ describe('конструктор бургера — без авторизаци�
     // закрытие по оверлею
     cy.get('[data-testid="modal-overlay"]').click({ force: true });
     cy.get('[data-testid="ingredient-modal"]').should('not.exist');
+
+    // открываем снова чтоб закрыть по esc
+    cy.get('[data-testid="ingredient-card-643d69a5c3f7b9001cfa093d"]').click();
+    //проверяем что модалка открыта
+    cy.get('[data-testid="ingredient-modal"]').should('be.visible');
+
+    //закрытие по Esc
+    cy.get('body').type('{Esc}');
+    cy.get('[data-testid="ingredient-modal"]').should('not.exist')
   });
 });
 
@@ -91,6 +100,12 @@ describe('конструктор бургера — создание заказ�
     //жду загрузку ингридиентов
     cy.wait('@getIngredients');
   });
+
+  // очистка авторизации
+    afterEach(() => {
+      cy.clearCookies();
+      cy.clearLocalStorage();
+    });
 
   it('создание заказа', () => {
     //собираю бургер

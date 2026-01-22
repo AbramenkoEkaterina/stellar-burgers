@@ -79,4 +79,31 @@ describe('burgerConstructor slice', () => {
     expect(state.ingredients[0].id).toBe('2');
     expect(state.ingredients[1].id).toBe('1');
   });
+
+  it('должен добавлять булку в поле bun, а не в ingredients', () => {
+  const initialState = {
+    bun: null,
+    ingredients: []
+  };
+
+  const bun: TIngredient = {
+    _id: 'bun-1',
+    name: 'Флюоресцентная булка R2-D3',
+    type: 'bun',
+    proteins: 44,
+    fat: 26,
+    carbohydrates: 85,
+    calories: 643,
+    price: 988,
+    image: '',
+    image_mobile: '',
+    image_large: ''
+  };
+
+  const state = constructorReducer(initialState, addIngredient(bun));
+
+  expect(state.bun).not.toBeNull();
+  expect(state.bun?.name).toBe('Флюоресцентная булка R2-D3');
+  expect(state.ingredients.length).toBe(0);
+});
 });
