@@ -54,7 +54,7 @@ export const getOrderById = createAsyncThunk<
   }
 });
 
-const feedsSlice = createSlice({
+export const feedsSlice = createSlice({
   name: 'feed',
   initialState,
   reducers: {
